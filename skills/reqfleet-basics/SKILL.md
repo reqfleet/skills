@@ -67,35 +67,26 @@ When a resource is selected or created, show its dashboard URL using the current
 The agent should use this order:
 
 1. If user provides a CLI path, use that path directly.
-2. If not provided, download `rqt` from the official URL format below.
+2. If not provided, install `rqt` using the official download script below.
 
 If a provided path does not exist or is not executable, ask the user to provide a valid path or proceed with download.
 
 ## CLI Download (Fallback)
 
-CLI binary URL format:
+Use the official installer script:
 
-`https://blackhole.reqfleet.io/req-cli/latest/${goos}-${arch}/rqt`
-
-### Architecture Rule
-
-- If detected architecture is `arm64`, use `arm` in the URL.
-- Otherwise use the detected architecture value as-is.
+`curl -fsSL https://blackhole.reqfleet.io/rqt-cli/cli_download.sh | bash`
 
 ## Recommended Agent Flow
 
 1. Ask user for optional CLI path.
 2. If CLI path is provided, verify it is executable and use it.
-3. If CLI path is not provided, detect runtime OS and architecture.
-4. Normalize architecture (`arm64` -> `arm`).
-5. Construct download URL.
-6. Download `rqt`.
-7. Make it executable.
-8. Optionally place it in a directory in `PATH` (or keep local and run via relative path).
-9. Ask for API endpoint and API key.
-10. Export API key as `REQFLEET_API_KEY` for CLI authentication.
-11. Export endpoint as `REQFLEET_API_ENDPOINT` (recommended).
-12. Store endpoint and key in agent session context (never print API key in logs/output).
+3. If CLI path is not provided, run the official download script.
+4. Use the downloaded local `./rqt` binary unless the user wants it moved elsewhere.
+5. Ask for API endpoint and API key.
+6. Export API key as `REQFLEET_API_KEY` for CLI authentication.
+7. Export endpoint as `REQFLEET_API_ENDPOINT` (recommended).
+8. Store endpoint and key in agent session context (never print API key in logs/output).
 
 ## Example Commands
 
@@ -105,16 +96,7 @@ CLI binary URL format:
 if [ -n "$USER_RQT_PATH" ]; then
 	rqt_bin="$USER_RQT_PATH"
 else
-goos="$(uname | tr '[:upper:]' '[:lower:]')"
-arch="$(uname -m)"
-
-if [ "$arch" = "arm64" ]; then
-  arch="arm"
-fi
-
-url="https://blackhole.reqfleet.io/req-cli/latest/${goos}-${arch}/rqt"
-curl -fL "$url" -o rqt
-chmod +x rqt
+	curl -fsSL https://blackhole.reqfleet.io/rqt-cli/cli_download.sh | bash
 rqt_bin="./rqt"
 fi
 
