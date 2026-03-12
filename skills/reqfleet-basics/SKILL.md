@@ -408,36 +408,29 @@ providers:
 
 Use these as reference patterns when updating the downloaded YAML. Keep the existing YAML schema/keys from the downloaded config and only change/add the relevant plan item fields.
 
-#### Example 1: Add a jmeter plan entry
+#### example yaml config
 
 ```yaml
-providers:
-  us-east-1: aws
-
-plans:
-	- plan_id: "pln_jmeter_123"
-		kind: "jmeter"
-		name: "checkout-smoke"
-		config:
-			vu: 50
-			rampup: "30s"
-			engines: 2
-```
-
-#### Example 2: Add a locust plan entry
-
-```yaml
-providers:
-  us-west-2: gcp
-
-plans:
-	- plan_id: "pln_locust_456"
-		kind: "locust"
-		name: "search-load"
-		config:
-			vu: 200
-			rampup: "2m"
-			engines: 4
+multi-test:
+  name: dummy-collection
+  projectid: "62768628403011678"
+  collectionid: "62768628604338270"
+  tests:
+  - name: prod-metrics
+    testid: "62800714795057261"
+    vu: 20
+    rampup: 600
+    engines: 1
+    duration: 10
+    csv_split: false
+    locations: {}
+    compute_unit: 1
+  csv_split: true
+  providers:
+    local-east-1: local
+  billing_kind: VUM
+  locations:
+    local-east-1: 1
 ```
 
 If the downloaded YAML already contains `plans`, append/update only the selected plan block rather than replacing unrelated entries.
