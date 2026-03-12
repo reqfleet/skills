@@ -302,9 +302,10 @@ Trigger may fail if engines are not ready. Keep retrying trigger until success, 
 
 Suggested behavior:
 
-1. Start retry window after launch.
-2. Retry `rqt collection trigger --collection_id=<collection_id>` until success or timeout.
-3. Stop retries after 6 minutes and report failure if still unsuccessful.
+1. Start retry window after launch. Wait 30 seconds before first trigger attempt to allow engines to start.
+2. If trigger fails, wait 30 seconds and retry.
+3. Retry `rqt collection trigger --collection_id=<collection_id>` until success or timeout.
+4. Stop retries after 6 minutes and report failure if still unsuccessful.
 
 ### Run Summary
 
