@@ -19,8 +19,8 @@ This is the **starting point only** and can be extended later.
 The agent must ask the user for:
 
 1. **Collection ID** (optional, ask first when loading skills)
-	- Prompt text: `Do you already have a collection_id? (optional)`
-	- If provided, run `rqt collection get --collection_id=<collection_id>`, extract `project_id`, and store it in future context.
+  - Prompt text: `Do you already have a collection-id? (optional)`
+  - If provided, run `rqt collection get --collection-id=<collection-id>`, extract the project ID, and store it in future context.
 	- If not provided, run `rqt project list --include-collections=true` and show collections for user to choose.
 	- After context is set, follow the collection launch/trigger flow in this document.
 2. **CLI path** (optional)
@@ -135,7 +135,7 @@ The agent must ask the user:
 Use this argument form:
 
 - Command: `rqt plan generate`
-- Args: `--plan_kind`, `kind`, `--prompt`, `prompt`
+- Args: `--plan-kind`, `kind`, `--prompt`, `prompt`
 
 Prerequisite: `REQFLEET_API_KEY` must be set in the environment so `rqt` can authenticate.
 
@@ -160,13 +160,13 @@ Safe example (argv style):
 
 ```text
 binary: rqt
-args: ["plan", "generate", "--plan_kind", kind, "--prompt", prompt]
+args: ["plan", "generate", "--plan-kind", kind, "--prompt", prompt]
 ```
 
 Unsafe example (do not use):
 
 ```text
-"rqt plan generate --plan_kind=" + kind + " --prompt=" + prompt
+"rqt plan generate --plan-kind=" + kind + " --prompt=" + prompt
 ```
 
 ### Output Handling Rules
@@ -193,7 +193,7 @@ Before creating a plan, fetch projects accessible by the user:
 
 `rqt project list`
 
-If `project_id` is already available in context (for example from `rqt collection get --collection_id=<collection_id>`), reuse that `project_id` directly and skip project list/selection prompts.
+If a project ID is already available in context (for example from `rqt collection get --collection-id=<collection-id>`), reuse that project ID directly and skip project list/selection prompts.
 
 Then:
 
@@ -204,9 +204,9 @@ Then:
 `rqt project create --name=<project_name>`
 
 4. Obtain the selected/created project UID (`project_uid`) for plan creation.
-5. Show project URL to user: `<api_endpoint>/dashboard/project/<project_id>`.
+5. Show project URL to user: `<api_endpoint>/dashboard/project/<project-id>`.
 
-When context already has `project_id`, use that as `project_uid` and do not ask the user to select/create project again.
+When context already has a project ID, use that as `project_uid` and do not ask the user to select/create project again.
 
 ### Plan Create Inputs
 
@@ -214,27 +214,27 @@ Plan creation requires:
 
 - `kind` (`jmeter` or `locust`)
 - `name` (plan name chosen by user)
-- `project_id` (the selected project UID)
+- `project-id` (the selected project UID)
 
 ### Plan Create Step
 
 Create the plan with kind, name, and project ID (UID).
 
-The create response returns a `plan_id`.
+The create response returns a `plan-id`.
 
 After plan creation, show plan URL to user:
 
-`<api_endpoint>/dashboard/plan/<plan_id>`
+`<api_endpoint>/dashboard/plan/<plan-id>`
 
 ### Upload Generated Test File
 
-After receiving `plan_id`, upload the test file using the CLI upload command that accepts `plan_id` and file path.
+After receiving `plan-id`, upload the test file using the CLI upload command that accepts `plan-id` and file path.
 
 Use the recorded `test_file_path` from earlier steps (user-provided path or generated file path).
 
 The agent should ensure:
 
-1. `plan_id` is captured from create response.
+1. `plan-id` is captured from create response.
 2. The uploaded file matches the plan kind.
 3. Upload runs only after successful plan creation.
 
@@ -245,38 +245,38 @@ The agent should ensure:
 3. Ask whether user already has a test file path; if yes, record it.
 4. Confirm whether to generate a new plan file.
 5. If generating, ask prompt.
-6. If generating, run `rqt plan generate` using argv-style arguments (`plan`, `generate`, `--plan_kind`, `kind`, `--prompt`, `prompt`) without shell string concatenation.
+6. If generating, run `rqt plan generate` using argv-style arguments (`plan`, `generate`, `--plan-kind`, `kind`, `--prompt`, `prompt`) without shell string concatenation.
 7. If generating, present generated plan content and ask for save confirmation.
 8. If confirmed, save with the correct extension and record saved path as `test_file_path`.
 9. If generation is skipped, keep user-provided path as `test_file_path`.
 10. Run `rqt project list` and show projects to user.
-11. If `project_id` is already in context, skip to step 14.
+11. If a project ID is already in context, skip to step 14.
 12. Otherwise ask user to select a project or create a new one.
 13. If user wants new project, run `rqt project create --name=<project_name>` and get `project_uid`.
 14. Ask user for plan name.
-15. Create the plan with `kind`, `name`, and `project_id`.
-16. Capture returned `plan_id`.
-17. Upload test file from `test_file_path` using `plan_id`. Run `rqt plan upload --filepath=<file_path> --plan_id=<plan_id>`.
+15. Create the plan with `kind`, `name`, and `project-id`.
+16. Capture returned `plan-id`.
+17. Upload test file from `test_file_path` using `plan-id`. Run `rqt plan upload --filepath=<file_path> --plan-id=<plan-id>`.
 18. If no file path is available, stop and ask user to provide one.
 
-## Collection Handling (Existing `collection_id`)
+## Collection Handling (Existing `collection-id`)
 
-When user provides an existing `collection_id`, use this flow.
+When user provides an existing `collection-id`, use this flow.
 
 ### Collection Context Sync
 
-Right after user provides `collection_id`, run:
+Right after user provides `collection-id`, run:
 
-`rqt collection get --collection_id=<collection_id>`
+`rqt collection get --collection-id=<collection-id>`
 
-Then extract `project_id` from the response and set it in future context.
+Then extract the project ID from the response and set it in future context.
 
 Show resource URLs to user from available IDs:
 
-- `<api_endpoint>/dashboard/collection/<collection_id>`
-- `<api_endpoint>/dashboard/project/<project_id>`
+- `<api_endpoint>/dashboard/collection/<collection-id>`
+- `<api_endpoint>/dashboard/project/<project-id>`
 
-After `project_id` is set in context, do not ask the user again for project selection in later plan creation steps.
+After the project ID is set in context, do not ask the user again for project selection in later plan creation steps.
 
 ### Required Confirmation
 
@@ -290,11 +290,11 @@ If user does not confirm, do not run collection commands.
 
 1. Launch collection:
 
-`rqt collection launch --collection_id=<collection_id>`
+`rqt collection launch --collection-id=<collection-id>`
 
 2. Trigger collection:
 
-`rqt collection trigger --collection_id=<collection_id>`
+`rqt collection trigger --collection-id=<collection-id>`
 
 ### Trigger Retry Policy
 
@@ -304,14 +304,14 @@ Suggested behavior:
 
 1. Start retry window after launch. Wait 30 seconds before first trigger attempt to allow engines to start.
 2. If trigger fails, wait 30 seconds and retry.
-3. Retry `rqt collection trigger --collection_id=<collection_id>` until success or timeout.
+3. Retry `rqt collection trigger --collection-id=<collection-id>` until success or timeout.
 4. Stop retries after 6 minutes and report failure if still unsuccessful.
 
 ### Run Summary
 
 After trigger succeeds, get results via:
 
-`rqt collection run_summary --collection_id=<collection_id>`
+`rqt collection run_summary --collection-id=<collection-id>`
 
 Show the run summary output to the user.
 
@@ -321,12 +321,14 @@ Use this flow when user does not have a collection or existing collections do no
 
 ### Required Inputs for Creation
 
-1. Ask user to choose a project first (`project_id`).
+1. Ask user to choose a project first (`project-id`).
 2. Ask user to choose traffic origin zone and provider.
 
 To list zones/providers:
 
 `rqt region list`
+
+`rqt region list --public`
 
 Show the zone list to the user and let them choose both `zone` and `provider`.
 
@@ -334,29 +336,29 @@ Show the zone list to the user and let them choose both `zone` and `provider`.
 
 Create collection with selected values:
 
-`rqt collection create --name=<collection-name> --project_id=<project_id> --zone=<zone> --provider=<provider>`
+`rqt collection create --name=<collection-name> --project-id=<project-id> --zone=<zone> --provider=<provider>`
 
-After creation, store the returned `collection_id` in context for subsequent launch/trigger/configuration workflows.
+After creation, store the returned `collection-id` in context for subsequent launch/trigger/configuration workflows.
 
 Show URLs after creation:
 
-- `<api_endpoint>/dashboard/collection/<collection_id>`
-- `<api_endpoint>/dashboard/project/<project_id>`
+- `<api_endpoint>/dashboard/collection/<collection-id>`
+- `<api_endpoint>/dashboard/project/<project-id>`
 
 ### Suggested Sequence
 
 1. Confirm collection creation is needed (no collection or no suitable collection).
-2. Ask user to select `project_id`.
-3. Run `rqt region list`.
+2. Ask user to select `project-id`.
+3. Run `rqt region list` and `rqt region list --public`.
 4. Show zones/providers and ask user to choose `zone` and `provider`.
 5. Ask user for collection name.
-6. Run `rqt collection create --name=<collection-name> --project_id=<project_id> --zone=<zone> --provider=<provider>`.
-7. Capture created `collection_id` and set it in context.
+6. Run `rqt collection create --name=<collection-name> --project-id=<project-id> --zone=<zone> --provider=<provider>`.
+7. Capture created `collection-id` and set it in context.
 8. Show collection and project URLs.
 
 ## Collection Configuration
 
-Use this flow to inspect and update collection configuration for a selected `collection_id`.
+Use this flow to inspect and update collection configuration for a selected `collection-id`.
 
 ### Recommendation
 
@@ -367,15 +369,15 @@ When users want to configure traffic origin in a collection, recommend doing it 
 
 Run:
 
-`rqt collection config_download --collection_id=<collection_id>`
+`rqt collection config_download --collection-id=<collection-id>`
 
 Save the downloaded YAML into a local file (for example `collection-config.yaml`) and show the YAML to the user before making changes.
 
 ### List Available Plans in Project
 
-Use the collection context `project_id` and run:
+Use the collection context project ID and run:
 
-`rqt project get --project_id=<project_id> --include-plans=true`
+`rqt project get --project-id=<project-id> --include-plans=true`
 
 Show the plan list to the user so they can choose which plan to add into the collection configuration.
 
@@ -385,7 +387,7 @@ Ask user:
 
 1. Which plan to add (from the plan list).
 2. Related runtime configuration values (for example: `vu`, `rampup`, `engines`, and other required plan config fields).
-3. Traffic origin mapping values: `zone` and `provider`.
+3. Traffic origin mapping values: `zone`. (`provider` is not required because the zone data should contain provider info).
 
 ### Update Behavior
 
@@ -402,13 +404,15 @@ providers:
 5. Ask for confirmation before upload.
 6. Upload updated YAML with:
 
-`rqt collection configure --collection_id=<collection_id> --filepath=<yaml-filepath>`
+`rqt collection configure --collection-id=<collection-id> --filepath=<yaml-filepath>`
 
 ### Example YAML Edits
 
 Use these as reference patterns when updating the downloaded YAML. Keep the existing YAML schema/keys from the downloaded config and only change/add the relevant plan item fields.
 
 #### example yaml config
+
+please be aware that the values in the example below are just placeholders, the actual config should be based on user inputs.
 
 ```yaml
 multi-test:
@@ -437,24 +441,24 @@ If the downloaded YAML already contains `plans`, append/update only the selected
 
 ### Suggested Sequence
 
-1. Ensure `collection_id` and `project_id` are available in context.
-2. Run `rqt collection config_download --collection_id=<collection_id>`.
+1. Ensure `collection-id` and the project ID are available in context.
+2. Run `rqt collection config_download --collection-id=<collection-id>`.
 3. Save output as a local yaml file (for example `collection-config.yaml`).
 4. Show YAML config to user.
-5. Run `rqt project get --project_id=<project_id> --include-plans=true`.
+5. Run `rqt project get --project-id=<project-id> --include-plans=true`.
 6. Show plan list to user.
 7. Ask which plan to add and config values (`vu`, `rampup`, `engines`, etc.), including `zone` and `provider`.
 8. Edit the local yaml file and set `providers:<zone>: <provider>`.
 9. Show updated YAML and ask for confirmation.
-10. On confirmation, run `rqt collection configure --collection_id=<collection_id> --filepath=<yaml-filepath>`.
+10. On confirmation, run `rqt collection configure --collection-id=<collection-id> --filepath=<yaml-filepath>`.
 
 ## Agent Prompt Template
 
 Use the following sequence when starting this skill:
 
-1. `Do you already have a collection_id? (optional)`
-2. If `collection_id` is provided, run `rqt collection get --collection_id=<collection_id>`, extract `project_id`, and set it in context.
-3. If `collection_id` is not provided, run `rqt project list --include-collections=true`, show collections, and ask user to choose a `collection_id`.
+1. `Do you already have a collection-id? (optional)`
+2. If `collection-id` is provided, run `rqt collection get --collection-id=<collection-id>`, extract the project ID, and set it in context.
+3. If `collection-id` is not provided, run `rqt project list --include-collections=true`, show collections, and ask user to choose a `collection-id`.
 4. If user has no collection or existing collections do not meet requirement, follow Collection Creation flow.
 5. `If you already have the Reqfleet CLI, please provide the path to it (optional).`
 6. If CLI path is empty: continue with CLI download fallback.
@@ -464,9 +468,9 @@ Use the following sequence when starting this skill:
 10. If API key is empty: `API key is required to continue. Please provide your Reqfleet API key.`
 11. Export key: `export REQFLEET_API_KEY="$USER_API_KEY"`.
 12. Export endpoint: `export REQFLEET_API_ENDPOINT="$USER_API_ENDPOINT"`.
-13. If `collection_id` is available: ask `Do you want me to launch and trigger this collection test now?`
+13. If `collection-id` is available: ask `Do you want me to launch and trigger this collection test now?`
 14. If confirmed, run launch -> wait 1 minute -> trigger with retry (timeout 6 minutes) -> run summary.
-15. For collection configuration work: first remind user that traffic-origin configuration is recommended in the UI; if they want CLI flow, run `rqt collection config_download --collection_id=<collection_id>`, save/edit yaml file, run `rqt project get --project_id=<project_id> --include-plans=true`, ask for plan + config (`vu`, `rampup`, `engines`, etc.) and `zone`/`provider`, set `providers:<zone>: <provider>`, then upload with `rqt collection configure --collection_id=<collection_id> --filepath=<yaml-filepath>` after confirmation.
+15. For collection configuration work: first remind user that traffic-origin configuration is recommended in the UI; if they want CLI flow, run `rqt collection config_download --collection-id=<collection-id>`, save/edit yaml file, run `rqt project get --project-id=<project-id> --include-plans=true`, ask for plan + config (`vu`, `rampup`, `engines`, etc.) and `zone`/`provider`, set `providers:<zone>: <provider>`, then upload with `rqt collection configure --collection-id=<collection-id> --filepath=<yaml-filepath>` after confirmation.
 16. Whenever a project/plan/collection is selected or created in the above steps, show its dashboard URL.
 
 ## Security Notes
@@ -486,7 +490,7 @@ This version intentionally covers only:
 - API key input (required)
 - Plan generation, confirmation, project selection/creation, and plan creation/upload flow
 - Existing collection launch/trigger flow with retry and run summary
-- Context carry-over from `collection_id` via `rqt collection get` (reuse `project_id` without re-asking)
+- Context carry-over from `collection-id` via `rqt collection get` (reuse the project ID without re-asking)
 - Collection configuration flow using downloaded YAML + project plan list
 - Collection creation flow using project selection + `rqt regions list` + provider/zone
 - Resource dashboard URLs for selected/created project, plan, and collection
