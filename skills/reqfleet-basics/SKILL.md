@@ -135,7 +135,7 @@ The agent must ask the user:
 Use this argument form:
 
 - Command: `rqt plan generate`
-- Args: `--plan-kind`, `kind`, `--prompt`, `prompt`
+- Args: `--kind`, `kind`, `--prompt`, `prompt`
 
 Prerequisite: `REQFLEET_API_KEY` must be set in the environment so `rqt` can authenticate.
 
@@ -160,13 +160,13 @@ Safe example (argv style):
 
 ```text
 binary: rqt
-args: ["plan", "generate", "--plan-kind", kind, "--prompt", prompt]
+args: ["plan", "generate", "--kind", kind, "--prompt", prompt]
 ```
 
 Unsafe example (do not use):
 
 ```text
-"rqt plan generate --plan-kind=" + kind + " --prompt=" + prompt
+"rqt plan generate --kind=" + kind + " --prompt=" + prompt
 ```
 
 ### Output Handling Rules
@@ -245,7 +245,7 @@ The agent should ensure:
 3. Ask whether user already has a test file path; if yes, record it.
 4. Confirm whether to generate a new plan file.
 5. If generating, ask prompt.
-6. If generating, run `rqt plan generate` using argv-style arguments (`plan`, `generate`, `--plan-kind`, `kind`, `--prompt`, `prompt`) without shell string concatenation.
+6. If generating, run `rqt plan generate` using argv-style arguments (`plan`, `generate`, `--kind`, `kind`, `--prompt`, `prompt`) without shell string concatenation.
 7. If generating, present generated plan content and ask for save confirmation.
 8. If confirmed, save with the correct extension and record saved path as `test_file_path`.
 9. If generation is skipped, keep user-provided path as `test_file_path`.
