@@ -322,23 +322,45 @@ Use this flow when user does not have a collection or existing collections do no
 ### Required Inputs for Creation
 
 1. Ask user to choose a project first (`project-id`).
-2. Ask user to choose traffic origin zone and provider.
+2. Ask the user to choose a `provider` (required). Do NOT accept a freeform/custom provider value — present a choice list instead.
 
-To list zones/providers:
+Agent behavior to obtain providers:
 
-`rqt region list`
+- If the CLI supports it, run `rqt provider list` to get available providers.
+- Otherwise, derive provider values from the merged `rqt region list` / `rqt region list --public` output (inspect provider metadata for regions/zones).
+- Present the available providers as choices and ask the user to pick one.
 
-`rqt region list --public`
+3. Ask whether the user knows the exact `zone` they need.
 
-Show the zone list to the user and let them choose both `zone` and `provider`.
+- If the user knows the exact `zone`: ask for the `zone` and confirm the `provider` (required). The agent will create the collection with both `--zone` and `--provider`.
+- If the user does not know the exact zone: ask them to pick a `region` (preferred). The agent should list available regions (see below). After the user picks a `region`, list the zones within that region and present a choice list that includes an "any" option.
+
+To list available regions and zones, the agent should run both listing commands and merge/filter their outputs:
+
+- `rqt region list`
+- `rqt region list --public`
+
+Agent behavior when listing regions and zones:
+
+1. Run both commands and capture structured output if available.
+2. Merge region entries into a single canonical region list (union + dedupe), prefer `--public` metadata when present, sort and present to the user.
+3. After the user selects a `region`, extract/filter the zone entries for that region from the combined output (or run a region-scoped listing if the CLI supports it) and present the zones to the user along with an `any` option.
+4. If the user selects `any`, create the collection with `--region` and `--provider` (API will pick the zone). If the user selects a specific `zone`, create with `--zone` and `--provider`.
+
+After creation the agent should query the collection details and display the exact zone chosen by the API.
 
 ### Create Command
 
-Create collection with selected values:
+
+If the user provided an explicit `zone`, create the collection with that zone and provider:
 
 `rqt collection create --name=<collection-name> --project-id=<project-id> --zone=<zone> --provider=<provider>`
 
-After creation, store the returned `collection-id` in context for subsequent launch/trigger/configuration workflows.
+If the user supplied a `region` (or selected `any`), create the collection with the region and provider and let the API select a zone:
+
+`rqt collection create --name=<collection-name> --project-id=<project-id> --region=<region> --provider=<provider>`
+
+After creation, store the returned `collection-id` in context for subsequent launch/trigger/configuration workflows and query the collection details to show the exact zone chosen by the API.
 
 Show URLs after creation:
 
@@ -349,12 +371,15 @@ Show URLs after creation:
 
 1. Confirm collection creation is needed (no collection or no suitable collection).
 2. Ask user to select `project-id`.
-3. Run `rqt region list` and `rqt region list --public`.
-4. Show zones/providers and ask user to choose `zone` and `provider`.
-5. Ask user for collection name.
-6. Run `rqt collection create --name=<collection-name> --project-id=<project-id> --zone=<zone> --provider=<provider>`.
-7. Capture created `collection-id` and set it in context.
-8. Show collection and project URLs.
+3. Ask which `provider` the user wants to use (required).
+4. Run `rqt region list` and `rqt region list --public`, merge outputs, and show regions.
+5. Ask whether the user knows the exact `zone`.
+  - If yes: ask for `zone` (confirm `provider`) and use `--zone --provider` when creating the collection.
+  - If no: ask user to choose a `region` from the merged list, then list zones within that region (include an `any` option). If user selects `any`, create with `--region --provider`; otherwise use `--zone --provider`.
+6. Ask user for collection name.
+7. Run the appropriate `rqt collection create` command (zone or region) based on the user's answer.
+8. Capture created `collection-id` and set it in context. Query the collection details and show the exact zone chosen by the API.
+9. Show collection and project URLs.
 
 ## Collection Configuration
 
@@ -456,10 +481,10 @@ If the downloaded YAML already contains `plans`, append/update only the selected
 
 Use the following sequence when starting this skill:
 
-1. `Do you already have a collection-id? (optional)`
-2. If `collection-id` is provided, run `rqt collection get --collection-id=<collection-id>`, extract the project ID, and set it in context.
-3. If `collection-id` is not provided, run `rqt project list --include-collections=true`, show collections, and ask user to choose a `collection-id`.
-4. If user has no collection or existing collections do not meet requirement, follow Collection Creation flow.
+1. If the user is managing an existing collection (not explicitly creating a new one), ask: `Do you already have a collection-id? (optional)`.
+  - If `collection-id` is provided, run `rqt collection get --collection-id=<collection-id>`, extract the project ID, and set it in context.
+  - If `collection-id` is not provided and the user wants to manage an existing collection, run `rqt project list --include-collections=true`, show collections, and ask user to choose a `collection-id`.
+2. If the user intends to create a new collection, skip the `collection-id` question and proceed with the Collection Creation flow.
 5. `If you already have the Reqfleet CLI, please provide the path to it (optional).`
 6. If CLI path is empty: continue with CLI download fallback.
 7. `Please provide your Reqfleet API endpoint (press enter to use default: https://reqfleet.com).`
