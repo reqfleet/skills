@@ -1,8 +1,21 @@
-# Reqfleet Skill for AI Agents
+# Reqfleet Skills for AI Agents
 
-The Reqfleet skill empowers AI agents to interact with the [Reqfleet](https://reqfleet.com) platform directly from a terminal or command-line environment. It streamlines load testing workflows, from plan generation to test execution and result analysis.
+This repository provides skills for interacting with the [Reqfleet](https://reqfleet.com) platform and for shared development workflows across Reqfleet repositories.
 
-## Core Capabilities
+## Available Skills
+
+| Skill | Purpose |
+|-------|---------|
+| [`reqfleet-basics`](skills/reqfleet-basics/SKILL.md) | Manage the Reqfleet CLI, load test plans, collections, and results. |
+| [`reqfleet-address-pr-comments`](skills/reqfleet-dev/reqfleet-address-pr-comments/SKILL.md) | Triage PR review feedback, implement and verify fixes, and resolve addressed threads on the existing PR. |
+| [`reqfleet-commit`](skills/reqfleet-dev/reqfleet-commit/SKILL.md) | Create Conventional Commits with Reqfleet branching, release-please, and attribution conventions. |
+| [`reqfleet-issue-to-development`](skills/reqfleet-dev/reqfleet-issue-to-development/SKILL.md) | Fetch an issue, create an issue-numbered branch from the repository's default branch, implement and verify the change, and commit through `reqfleet-commit`. |
+| [`reqfleet-go-style-core`](skills/reqfleet-dev/reqfleet-go-style-core/SKILL.md) | Apply core Go style, formatting, readability, nesting, and return-value guidance, with bundled reference material. |
+| [`reqfleet-go-performance`](skills/reqfleet-dev/reqfleet-go-performance/SKILL.md) | Review Go hot paths for efficient conversions, container capacity, and value passing; measure results with the target workload. |
+
+Shared engineering skills live under `skills/reqfleet-dev/`, with one directory per skill. Each skill follows the target repository's development and execution rules rather than assuming a particular language or environment.
+
+## Reqfleet Platform Capabilities
 
 - **CLI Management:** Automatically resolves or downloads the Reqfleet CLI (`rqt`).
 - **Plan Lifecycle:** Generate load test plans (JMeter/Locust) using natural language prompts, create projects, and upload test files.
@@ -12,7 +25,7 @@ The Reqfleet skill empowers AI agents to interact with the [Reqfleet](https://re
 
 ## Prerequisites
 
-To use this skill effectively, the environment should have:
+The `reqfleet-basics` skill requires:
 
 1.  **Reqfleet API Key:** Required for all operations. Get yours from the Reqfleet dashboard.
 2.  **Reqfleet API Endpoint:** Defaults to `https://reqfleet.com`.
@@ -24,11 +37,41 @@ To use this skill effectively, the environment should have:
 npx skills add https://github.com/reqfleet/skills
 ```
 
+To install only the PR review skill:
 
+```bash
+npx skills add reqfleet/skills --skill reqfleet-address-pr-comments
+```
+
+The PR review skill requires a local repository clone, authenticated GitHub CLI (`gh`), and the `agynio/gh-pr-review` extension. It does not require a Reqfleet API key or `rqt`. See the [skill instructions](skills/reqfleet-dev/reqfleet-address-pr-comments/SKILL.md) for setup and permissions.
+
+To install only the commit skill:
+
+```bash
+npx skills add reqfleet/skills --skill reqfleet-commit
+```
+
+The commit skill uses Git and the target repository's required checks. It does not require the PR review extension.
+
+To install the issue workflow and its required commit skill:
+
+```bash
+npx skills add reqfleet/skills --skill reqfleet-issue-to-development reqfleet-commit
+```
+
+The issue workflow requires a local repository clone, Git, authenticated GitHub CLI (`gh`), and `reqfleet-commit`. It does not require the PR review extension. It asks before switching to the default branch or pulling, and does not push or open a PR unless requested.
+
+To install the Go style and performance skills together:
+
+```bash
+npx skills add reqfleet/skills --skill reqfleet-go-style-core reqfleet-go-performance
+```
+
+Both skills follow the target repository's Go toolchain, working directory, execution environment, and checks. The style skill includes its principle and formatting references. Performance figures are illustrative rather than guarantees for the target repository.
 
 ## Getting Started
 
-When an agent initiates the Reqfleet skill, it should guide you through an initial setup flow:
+When an agent initiates `reqfleet-basics`, it should guide you through an initial setup flow:
 
 1.  **Collection ID (Optional):** If you already have a collection you want to work with.
 2.  **CLI Path (Optional):** Provide a path to a local `rqt` binary if available.
