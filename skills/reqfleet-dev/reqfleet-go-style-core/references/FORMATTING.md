@@ -57,7 +57,7 @@ Exceptions:
 ## Line Length
 
 There is **no rigid line length limit** in Go, but avoid uncomfortably long
-lines. Uber suggests a soft limit of 99 characters.
+lines. [Uber suggests a soft limit of 99 characters](https://github.com/uber-go/guide/blob/master/style.md#avoid-overly-long-lines).
 
 Guidelines:
 - If a line feels too long, **refactor** rather than just wrap

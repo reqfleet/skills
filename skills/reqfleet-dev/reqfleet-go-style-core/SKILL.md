@@ -3,7 +3,7 @@ name: reqfleet-go-style-core
 description: Use when working with Go formatting, line length, nesting, naked returns, semicolons, or core style principles. Also use when a style question isn't covered by a more specific skill, even if the user doesn't reference a specific style rule. Does not cover domain-specific patterns like error handling, naming, or testing (see specialized skills). Acts as fallback when no more specific style skill applies.
 license: Apache-2.0
 metadata:
-  sources: "Effective Go, Google Style Guide, Uber Style Guide, Go Wiki CodeReviewComments"
+  sources: "Effective Go, Google Style Guide, Uber Go Style Guide, Go Wiki CodeReviewComments"
 ---
 
 # Go Style Core Principles
@@ -11,6 +11,10 @@ metadata:
 ## Repository Environment
 
 Read the target repository's agent instructions and relevant development skills before running Go tools. Use its prescribed execution environment, module working directory, formatting targets, and checks. Do not assume a particular operating system, VM, repository layout, or Make target.
+
+## Style Reference
+
+Consult the [Uber Go Style Guide](https://github.com/uber-go/guide/blob/master/style.md) for additional Go style guidance and examples. Follow the target repository's documented rules where they differ from the guide.
 
 ## Style Principles (Priority Order)
 
@@ -30,7 +34,7 @@ When writing readable Go code, apply these principles in order of importance:
 
 ## Formatting
 
-Run `gofmt` — no exceptions. There is **no rigid line length limit**, but Uber suggests a soft limit of 99 characters. Break by semantics, not length — refactor rather than just wrap.
+Run `gofmt` — no exceptions. There is **no rigid line length limit**, but [Uber suggests a soft limit of 99 characters](https://github.com/uber-go/guide/blob/master/style.md#avoid-overly-long-lines). Break by semantics, not length — refactor rather than just wrap.
 
 > Read [references/FORMATTING.md](references/FORMATTING.md) when configuring gofmt, deciding on line breaks, applying MixedCaps rules, or resolving local consistency questions.
 
