@@ -1,6 +1,6 @@
 ---
 name: reqfleet-go-performance
-description: Go performance patterns including efficient string handling, type conversions, and container capacity hints. Use when optimizing Go code or writing performance-critical sections.
+description: Go performance patterns including efficient string handling, type conversions, container capacity hints, and avoiding unnecessary pointers and GC overhead. Use when optimizing Go code or writing performance-critical sections.
 ---
 
 # Go Performance Patterns
@@ -9,7 +9,7 @@ description: Go performance patterns including efficient string handling, type c
 
 Read the target repository's agent instructions and relevant development skills before running Go tools. Use its prescribed execution environment, module working directory, benchmarks, and checks. Do not assume a particular operating system, VM, repository layout, or Make target.
 
-> **Source**: Uber Go Style Guide
+> **Source**: [Uber Go Style Guide: Performance](https://github.com/uber-go/guide/blob/master/style.md#performance)
 
 Performance-specific guidelines apply only to the **hot path**. Don't prematurely optimize—focus these patterns where they matter most.
 
@@ -21,7 +21,7 @@ Benchmark figures and speedups below are illustrative examples retained from the
 
 When converting primitives to/from strings, `strconv` is faster than `fmt`.
 
-> **Source**: Uber Go Style Guide
+> **Source**: [Uber Go Style Guide: Prefer strconv over fmt](https://github.com/uber-go/guide/blob/master/style.md#prefer-strconv-over-fmt)
 
 **Bad:**
 
@@ -52,7 +52,7 @@ for i := 0; i < b.N; i++ {
 
 Do not create byte slices from a fixed string repeatedly. Instead, perform the conversion once and capture the result.
 
-> **Source**: Uber Go Style Guide
+> **Source**: [Uber Go Style Guide: Avoid repeated string-to-byte conversions](https://github.com/uber-go/guide/blob/master/style.md#avoid-repeated-string-to-byte-conversions)
 
 **Bad:**
 
@@ -86,7 +86,7 @@ The good version is **~7x faster** because it avoids allocating a new byte slice
 
 Specify container capacity where possible to allocate memory up front. This minimizes subsequent allocations from copying and resizing as elements are added.
 
-> **Source**: Uber Go Style Guide
+> **Source**: [Uber Go Style Guide: Prefer Specifying Container Capacity](https://github.com/uber-go/guide/blob/master/style.md#prefer-specifying-container-capacity)
 
 ### Map Capacity Hints
 
@@ -165,11 +165,13 @@ The good version is **~12x faster** due to zero reallocations during append.
 
 ---
 
-## Pass Values
+## Prefer Values; Use Pointers Only When Necessary
 
-> **Source**: Go Wiki CodeReviewComments (Advisory)
+> **Sources**: Go Wiki CodeReviewComments (Advisory); [Go GC Guide](https://go.dev/doc/gc-guide)
 
-Don't pass pointers as function arguments just to save a few bytes. If a function refers to its argument `x` only as `*x` throughout, then the argument shouldn't be a pointer.
+Prefer passing, returning, and storing values. Use pointers only when required by semantics or justified by measured copy costs—not merely to save a few bytes or because a struct might grow later.
+
+Avoid unnecessary pointers to reduce indirection and potentially avoid heap allocations and GC scanning work. Do not assume every pointer allocates or every value stays on the stack: allocation depends on compiler escape analysis and usage, and values can contain pointers internally.
 
 **Common instances where values should be passed directly:**
 
@@ -192,9 +194,13 @@ func process(s string) {
 }
 ```
 
-**Exceptions:**
-- Large structs where copying is expensive
-- Small structs that might grow in the future
+**Use pointers when necessary for:**
+- Mutating the caller's value or preserving shared identity.
+- Representing a meaningful `nil` state or satisfying an API/interface that requires a pointer.
+- Avoiding copies of types that must not be copied after use, such as `sync.Mutex`.
+- Avoiding expensive copies of large values when benchmarks demonstrate a benefit.
+
+Compare `allocs/op` and `B/op` using the relevant benchmarks with `-benchmem`. Inspect compiler escape-analysis diagnostics (`-gcflags='-m=2'`) when investigating heap allocations; measure the target workload before claiming reduced GC overhead.
 
 ---
 
@@ -207,6 +213,7 @@ func process(s string) {
 | Map initialization | `make(map[K]V)` | `make(map[K]V, size)` | Fewer allocs |
 | Slice initialization | `make([]T, 0)` | `make([]T, 0, cap)` | ~12x faster |
 | Small fixed-size args | `*string`, `*io.Reader` | `string`, `io.Reader` | No indirection |
+| Pointer usage | Pointers by default | Values unless semantics or measured copy costs require pointers | May reduce heap allocations and GC scanning |
 
 ---
 
