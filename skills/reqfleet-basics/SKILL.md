@@ -9,14 +9,14 @@ This skill defines the initial flow an agent should follow to start working with
 ## Goal
 
 1. Resolve and prepare the Reqfleet CLI (`rqt`).
-2. Collect required connection inputs from the user.
-3. Prepare for authenticated API usage.
+2. Collect required connection inputs from the user, except credentials.
+3. Read the API key from the `REQFLEET_API_KEY` environment variable.
 
 This is the **starting point only** and can be extended later.
 
 ## Required Inputs
 
-The agent must ask the user for:
+Ask the user for:
 
 1. **Collection ID** (optional, ask first when loading skills)
   - Prompt text: `Do you already have a collection-id? (optional)`
@@ -29,26 +29,24 @@ The agent must ask the user for:
 3. **API endpoint** (optional)
 	- Prompt text: `Please provide your Reqfleet API endpoint (press enter to use default: https://reqfleet.com).`
 	- Default if user skips: `https://reqfleet.com`
-4. **API key** (mandatory)
-	- Prompt text: `Please provide your Reqfleet API key (required).`
-	- If missing, stop and ask again.
+
+Do not ask the user to provide the API key. Read `REQFLEET_API_KEY` from the process environment. If it is unset or empty, stop before running authenticated commands and tell the user to configure it in the environment available to the harness, then restart the session. Never request or print the key.
 
 ## Authentication Setup
 
 The CLI discovers credentials from environment variables.
 
-Required before running `rqt` commands:
-
-- Export API key to `REQFLEET_API_KEY`.
+Before running `rqt` commands, check that `REQFLEET_API_KEY` is set and non-empty in the process environment. Do not ask for the key or copy it into session context. If it is unavailable, tell the user to configure the environment variable for the harness and stop; do not proceed with authenticated commands.
 
 Optional but recommended:
 
 - Export endpoint to `REQFLEET_API_ENDPOINT`.
 
-Example:
+Configure `REQFLEET_API_KEY` securely in the harness environment before starting the session. Do not put its value in commands, prompts, or files.
+
+Optional endpoint example:
 
 ```bash
-export REQFLEET_API_KEY="$USER_API_KEY"
 export REQFLEET_API_ENDPOINT="$USER_API_ENDPOINT"
 ```
 
@@ -83,10 +81,9 @@ Use the official installer script:
 2. If CLI path is provided, verify it is executable and use it.
 3. If CLI path is not provided, run the official download script.
 4. Use the downloaded local `./rqt` binary unless the user wants it moved elsewhere.
-5. Ask for API endpoint and API key.
-6. Export API key as `REQFLEET_API_KEY` for CLI authentication.
+5. Ask for API endpoint.
+6. Check that `REQFLEET_API_KEY` is set in the process environment; if not, stop and tell the user to configure it in the harness environment. Do not ask for or store the key.
 7. Export endpoint as `REQFLEET_API_ENDPOINT` (recommended).
-8. Store endpoint and key in agent session context (never print API key in logs/output).
 
 ## Example Commands
 
@@ -105,8 +102,9 @@ fi
 
 ### Set auth env vars before CLI commands
 
+The harness must provide `REQFLEET_API_KEY` in the process environment. Do not prompt for or echo its value. Set the endpoint if needed:
+
 ```bash
-export REQFLEET_API_KEY="$USER_API_KEY"
 export REQFLEET_API_ENDPOINT="$USER_API_ENDPOINT"
 ```
 
@@ -485,26 +483,23 @@ Use the following sequence when starting this skill:
   - If `collection-id` is provided, run `rqt collection get --collection-id=<collection-id>`, extract the project ID, and set it in context.
   - If `collection-id` is not provided and the user wants to manage an existing collection, run `rqt project list --include-collections=true`, show collections, and ask user to choose a `collection-id`.
 2. If the user intends to create a new collection, skip the `collection-id` question and proceed with the Collection Creation flow.
-5. `If you already have the Reqfleet CLI, please provide the path to it (optional).`
-6. If CLI path is empty: continue with CLI download fallback.
-7. `Please provide your Reqfleet API endpoint (press enter to use default: https://reqfleet.com).`
-8. If empty input: set endpoint to `https://reqfleet.com`.
-9. `Please provide your Reqfleet API key (required).`
-10. If API key is empty: `API key is required to continue. Please provide your Reqfleet API key.`
-11. Export key: `export REQFLEET_API_KEY="$USER_API_KEY"`.
-12. Export endpoint: `export REQFLEET_API_ENDPOINT="$USER_API_ENDPOINT"`.
-13. If `collection-id` is available: ask `Do you want me to launch and trigger this collection test now?`
-14. If confirmed, run launch -> wait 1 minute -> trigger with retry (timeout 6 minutes) -> run summary.
-15. For collection configuration work: first remind user that traffic-origin configuration is recommended in the UI; if they want CLI flow, run `rqt collection config_download --collection-id=<collection-id>`, save/edit yaml file, run `rqt project get --project-id=<project-id> --include-plans=true`, ask for plan + config (`vu`, `rampup`, `engines`, etc.) and `zone`/`provider`, set `providers:<zone>: <provider>`, then upload with `rqt collection configure --collection-id=<collection-id> --filepath=<yaml-filepath>` after confirmation.
-16. Whenever a project/plan/collection is selected or created in the above steps, show its dashboard URL.
+3. `If you already have the Reqfleet CLI, please provide the path to it (optional).`
+4. If CLI path is empty: continue with CLI download fallback.
+5. `Please provide your Reqfleet API endpoint (press enter to use default: https://reqfleet.com).`
+6. If empty input: set endpoint to `https://reqfleet.com`.
+7. Check that `REQFLEET_API_KEY` is non-empty in the environment available to the harness. If unavailable, tell the user to configure it there and stop; never request or print the key.
+8. Export endpoint: `export REQFLEET_API_ENDPOINT="$USER_API_ENDPOINT"`.
+9. If `collection-id` is available: ask `Do you want me to launch and trigger this collection test now?`
+10. If confirmed, run launch -> wait 1 minute -> trigger with retry (timeout 6 minutes) -> run summary.
+11. For collection configuration work: first remind user that traffic-origin configuration is recommended in the UI; if they want CLI flow, run `rqt collection config_download --collection-id=<collection-id>`, save/edit yaml file, run `rqt project get --project-id=<project-id> --include-plans=true`, ask for plan + config (`vu`, `rampup`, `engines`, etc.) and `zone`/`provider`, set `providers:<zone>: <provider>`, then upload with `rqt collection configure --collection-id=<collection-id> --filepath=<yaml-filepath>` after confirmation.
+12. Whenever a project/plan/collection is selected or created in the above steps, show its dashboard URL.
 
 ## Security Notes
 
 - Treat API keys as secrets.
-- Put API key in `REQFLEET_API_KEY` so CLI can authenticate.
-- Do not echo API keys in command output.
+- Read API key from `REQFLEET_API_KEY` in the environment available to the harness.
+- Do not request, echo, or copy API keys into session context.
 - Do not commit API keys into files.
-- Prefer environment variables or secure secret stores.
 
 ## Current Scope
 
@@ -512,12 +507,12 @@ This version intentionally covers only:
 
 - CLI resolution (`user path` first, otherwise download `rqt`)
 - Endpoint input (with default)
-- API key input (required)
+- API key discovery from the harness environment
 - Plan generation, confirmation, project selection/creation, and plan creation/upload flow
 - Existing collection launch/trigger flow with retry and run summary
 - Context carry-over from `collection-id` via `rqt collection get` (reuse the project ID without re-asking)
 - Collection configuration flow using downloaded YAML + project plan list
-- Collection creation flow using project selection + `rqt regions list` + provider/zone
+- Collection creation flow using `rqt regions list` + provider/zone
 - Resource dashboard URLs for selected/created project, plan, and collection
 
 Future updates can add authentication verification, common `rqt` commands, and troubleshooting.
