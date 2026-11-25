@@ -76,7 +76,7 @@ When an agent initiates `reqfleet-basics`, it should guide you through an initia
 1.  **Collection ID (Optional):** If you already have a collection you want to work with.
 2.  **CLI Path (Optional):** Provide a path to a local `rqt` binary if available.
 3.  **API Endpoint:** Press enter to use the default or provide a custom endpoint.
-4.  **API Key (Mandatory):** Provide your API key (it will be handled securely as an environment variable).
+4.  **API Key:** The skill reads `REQFLEET_API_KEY` from the environment available to the harness. Configure it there before starting; the agent will not ask you to provide the key in chat.
 
 ## Key Workflows
 
